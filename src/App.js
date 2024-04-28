@@ -58,7 +58,24 @@ function App() {
     setToys(toys);
   };
 
+  const connectHandler = async () => {
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const account = ethers.utils.getAddress(accounts[0]);
+    setAccount(account?.toLowerCase());
+
+    window.ethereum.on("accountsChanged", async () => {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setAccount(accounts?.[0]?.toLowerCase());
+      console.log({ accounts });
+    });
+  };
+
   useEffect(() => {
+    connectHandler();
     loadBlockchainData();
   }, []);
 

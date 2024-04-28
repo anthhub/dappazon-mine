@@ -7,21 +7,25 @@ import Rating from "./Rating";
 import close from "../assets/close.svg";
 
 const Product = ({ item, provider, account, dappazon, togglePop }) => {
-  const [order, setOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [hasBought, setHasBought] = useState(false);
 
   const fetchDetails = async () => {
     const events = await dappazon.queryFilter("Buy");
-    const orders = events.filter(
-      (event) =>
-        event.args.buyer === account &&
-        event.args.itemId.toString() === item.id.toString()
+
+    const orders =
+      events.filter((event) => {
+        return (
+          event.args.buyer?.toLowerCase() === account &&
+          event.args.itemId.toString() === item.id.toString()
+        );
+      }) || [];
+
+    setOrders(
+      await Promise.all(
+        orders?.map((order) => dappazon.orders(account, order.args.orderId))
+      )
     );
-
-    if (orders.length === 0) return;
-
-    const order = await dappazon.orders(account, orders[0].args.orderId);
-    setOrder(order);
   };
 
   const buyHandler = async () => {
@@ -38,7 +42,9 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
 
   useEffect(() => {
     fetchDetails();
-  }, [hasBought]);
+  }, [hasBought, account]);
+
+  console.log({ orders });
 
   return (
     <div className="product">
@@ -97,9 +103,9 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
             <small>Sold by</small> Dappazon
           </p>
 
-          {order && (
-            <div className="product__bought">
-              Item bought on <br />
+          {orders?.map((order, index) => (
+            <div className="product__bought" key={order.id}>
+              order [{index + 1}]: item bought on <br />
               <strong>
                 {new Date(
                   Number(order.time.toString() + "000")
@@ -111,7 +117,7 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
                 })}
               </strong>
             </div>
-          )}
+          ))}
         </div>
 
         <button onClick={togglePop} className="product__close">
