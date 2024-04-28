@@ -28,7 +28,7 @@ contract Dappazon {
     event List(string name, uint256 cost, uint256 quantity);
 
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "msg.sender == owner,");
         _;
     }
 
@@ -67,8 +67,8 @@ contract Dappazon {
     function buy(uint256 _id) public payable {
         Item memory item = items[_id];
 
-        require(msg.value >= item.cost);
-        require(item.stock > 0);
+        require(msg.value >= item.cost, "msg.value >= item.cost");
+        require(item.stock > 0, "item.stock > 0");
 
         Order memory order = Order(block.timestamp, item);
         orderCount[msg.sender]++;
@@ -81,6 +81,10 @@ contract Dappazon {
 
     function withdraw() public onlyOwner {
         (bool success, ) = owner.call{value: address(this).balance}("");
-        require(success);
+        require(success, "success");
+    }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }

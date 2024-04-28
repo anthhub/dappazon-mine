@@ -7,7 +7,7 @@ import Section from "./components/Section";
 import Product from "./components/Product";
 
 // ABIs
-import Dappazon from "./abis/Dappazon.json";
+import Dappazon from "./artifacts/contracts/Dappazon.sol/Dappazon.json";
 
 // Config
 import config from "./config.json";
@@ -17,6 +17,7 @@ function App() {
   const [dappazon, setDappazon] = useState(null);
 
   const [account, setAccount] = useState(null);
+  const [owner, setOwner] = useState(null);
 
   const [electronics, setElectronics] = useState(null);
   const [clothing, setClothing] = useState(null);
@@ -37,10 +38,13 @@ function App() {
 
     const dappazon = new ethers.Contract(
       config[network.chainId].dappazon.address,
-      Dappazon,
+      Dappazon.abi,
       provider
     );
     setDappazon(dappazon);
+
+    const owner = await dappazon.owner();
+    setOwner(owner?.toLowerCase());
 
     const items = [];
 
@@ -77,13 +81,21 @@ function App() {
   useEffect(() => {
     connectHandler();
     loadBlockchainData();
-  }, []);
+  }, [account]);
 
   console.log({ electronics, clothing, toys });
 
   return (
     <div>
-      <Navigation account={account} setAccount={setAccount} />
+      {dappazon && (
+        <Navigation
+          provider={provider}
+          dappazon={dappazon}
+          owner={owner}
+          account={account}
+          setAccount={setAccount}
+        />
+      )}
 
       <h2>Dappazon Best Sellers</h2>
 

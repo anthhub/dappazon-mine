@@ -42,6 +42,9 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
 
   useEffect(() => {
     fetchDetails();
+
+    dappazon?.on("Buy", fetchDetails);
+    return () => dappazon?.off("Buy", fetchDetails);
   }, [hasBought, account]);
 
   console.log({ orders });
@@ -104,7 +107,7 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
           </p>
 
           {orders?.map((order, index) => (
-            <div className="product__bought" key={order.id}>
+            <div className="product__bought" key={index}>
               order [{index + 1}]: item bought on <br />
               <strong>
                 {new Date(
